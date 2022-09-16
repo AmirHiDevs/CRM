@@ -1,0 +1,81 @@
+version: "3.9"
+services:
+  #PHP Service
+  crm-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cloudsigma.com/php
+    container_name: crm-backend
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: backend
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html/
+    volumes:
+      - ./:/var/www/html/
+      - ./php/laravel.ini:/usr/local/etc/php/conf.d/laravel.ini
+    networks:
+      - crm
+
+
+
+  crm-frontend:
+    stdin_open: true
+    container_name: crm-frontend
+    environment:
+      SERVICE_NAME: frontend
+      SERVICE_TAGS: dev
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    volumes:
+      - /app/node_modules
+      - ../frontend:/var/www/html/
+    networks:
+      - crm
+
+  #Nginx Service
+  crm-nginx:
+    depends_on:
+      - crm-backend
+      - crm-frontend
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: crm-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+    networks:
+      - crm
+
+  #Mysql Service
+  crm-mysql:
+    image: mysql:latest
+    container_name: crm-mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: crm
+      MYSQL_ROOT_PASSWORD: root
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./mysql/mysql.conf:/etc/mysql/mysql.conf
+    networks:
+      - crm
+
+#Docker Networks
+networks:
+  crm:
+    driver: bridge
+#Volumes
+volumes:
+  dbdata:
+   driver: local
