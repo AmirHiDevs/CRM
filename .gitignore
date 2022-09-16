@@ -1,7 +1,5 @@
 .DS_Store
-frontend/node_modules
 /dist
-backend/src/node_modules
 backend/src/public/hot
 backend/src/public/storage
 backend/src/storage/*.key
@@ -15,7 +13,7 @@ backend/src/Homestead.yaml
 backend/src/npm-debug.log
 backend/src/yarn-error.log
 
-
+frontend/node_modules
 
 # local env files
 .env.local
